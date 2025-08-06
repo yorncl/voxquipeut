@@ -1,68 +1,127 @@
 #include "vox.h"
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/vector_float3.hpp>
+#include <glm/ext/vector_float4.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/trigonometric.hpp>
 
 // Scalar field implem
 
-void ScalarField::render(Camera &camera) {}
+// Only 10 avaible slots, better get there first!
+static RenderObject objects[10];
+static int stack_top = 0;
 
-void Terrain::render(Camera &camera) {}
-
-void Cube::render(Camera &camera) {}
-
-Cube setup_cube() {
-
-    float cube_vertices[] = {
-        -1.0f, -1.0f, -1.0f,                      // triangle 1 : begin
-        -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  // triangle 1 : end
-        1.0f,  1.0f,  -1.0f,                      // triangle 2 : begin
-        -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, // triangle 2 : end
-        1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
-        1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, 1.0f,  -1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f,
-        -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f,
-        -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  1.0f,
-        1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, -1.0f,
-        1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
-        1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  -1.0f, 1.0f};
-
-    float cube_colors[] = {
-        0.583f, 0.771f, 0.014f, 0.609f, 0.115f, 0.436f, 0.327f, 0.483f, 0.844f,
-        0.822f, 0.569f, 0.201f, 0.435f, 0.602f, 0.223f, 0.310f, 0.747f, 0.185f,
-        0.597f, 0.770f, 0.761f, 0.559f, 0.436f, 0.730f, 0.359f, 0.583f, 0.152f,
-        0.483f, 0.596f, 0.789f, 0.559f, 0.861f, 0.639f, 0.195f, 0.548f, 0.859f,
-        0.014f, 0.184f, 0.576f, 0.771f, 0.328f, 0.970f, 0.406f, 0.615f, 0.116f,
-        0.676f, 0.977f, 0.133f, 0.971f, 0.572f, 0.833f, 0.140f, 0.616f, 0.489f,
-        0.997f, 0.513f, 0.064f, 0.945f, 0.719f, 0.592f, 0.543f, 0.021f, 0.978f,
-        0.279f, 0.317f, 0.505f, 0.167f, 0.620f, 0.077f, 0.347f, 0.857f, 0.137f,
-        0.055f, 0.953f, 0.042f, 0.714f, 0.505f, 0.345f, 0.783f, 0.290f, 0.734f,
-        0.722f, 0.645f, 0.174f, 0.302f, 0.455f, 0.848f, 0.225f, 0.587f, 0.040f,
-        0.517f, 0.713f, 0.338f, 0.053f, 0.959f, 0.120f, 0.393f, 0.621f, 0.362f,
-        0.673f, 0.211f, 0.457f, 0.820f, 0.883f, 0.371f, 0.982f, 0.099f, 0.879f};
-
-    Cube c;
-    // shaders
-    Shader sv(GL_VERTEX_SHADER);
-    Shader sf(GL_FRAGMENT_SHADER);
-    try {
-        sv.from_file("../src/shaders/vertex.glsl").compile();
-        sf.from_file("../src/shaders/frag.glsl").compile();
-    } catch (ShaderCreationException &e) {
-        std::cerr << e.what() << std::endl;
-    }
-    ShaderProgram program;
-    program.attach(sf);
-    program.attach(sv);
-    if (program.link()) {
-        throw RenderObjectException();
-    }
-
-    c.prog = program;
-    c.m.vertices.assign(cube_vertices,
-                      cube_vertices + (sizeof(cube_vertices) / sizeof(float)));
-    c.m.colors.assign(cube_colors,
-                    cube_colors + (sizeof(cube_colors) / sizeof(float)));
+int new_render_object() {
+    int handle = stack_top;
+    stack_top++;
+    // RenderObject& o = objects[handle];
+    // o.vertices = std::vector<float>();
+    // o.indices = std::vector<float>();
+    // o.colors = std::vector<float>();
+    return handle;
 }
 
-static void render_loop(Context &ctx) {}
+void render_setup() { glEnable(GL_DEPTH_TEST); }
 
-void start_renderer(Context &ctx) {}
+// Very ugly, but it's okay, we're all going to die anyway
+void render_register_shaders(int handle, std::string path_v,
+                             std::string path_f) {
+    Shader sv, sf;
+    RenderObject &obj = objects[handle];
+    sv.path = path_v;
+    sf.path = path_f;
+
+    try {
+        sv.source = get_shader_source(path_v);
+        sf.source = get_shader_source(path_f);
+        shader_compile(sv, GL_VERTEX_SHADER);
+        shader_compile(sf, GL_FRAGMENT_SHADER);
+    } catch (ShaderCreationException &e) {
+        std::cerr << e.what() << std::endl;
+        // one day, when I'm grown up, I will manage errors properly
+        exit(1);
+    }
+    obj.sp.id = glCreateProgram();
+    obj.sp.shaders.push_back(sv);
+    obj.sp.shaders.push_back(sf);
+    if (shader_program_link(obj.sp)) {
+        exit(1);
+    }
+}
+// code to update render target if needed
+void render_update_objects(int handle, Object &obj) {
+    RenderObject &robj = objects[handle];
+
+    // copy the vbos data
+    robj.vertices = obj.m.vertices;
+    robj.indices = obj.m.indices;
+    robj.colors = obj.m.colors;
+
+    std::cout << "updating render object: " << handle << std::endl;
+    std::cout << obj.m.vertices.data() << std::endl;
+    std::cout << robj.vertices.data() << std::endl;
+
+    GLuint vertices;
+    glGenBuffers(1, &vertices);
+
+    unsigned int colors;
+    glGenBuffers(1, &colors);
+
+    GLuint VAO;
+
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, vertices);
+
+    glBufferData(GL_ARRAY_BUFFER, robj.vertices.size() * sizeof(float),
+                 robj.vertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                          (void *)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, colors);
+    glBufferData(GL_ARRAY_BUFFER, robj.colors.size() * sizeof(float),
+                 robj.colors.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                          (void *)0);
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(VAO);
+
+    robj.vao = VAO;
+    robj.vbo_v = vertices;
+    robj.vbo_c = colors;
+}
+
+void render_clear() {
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void render_object(int handle, Context &ctx) {
+    RenderObject &robj = objects[handle];
+
+    glBindVertexArray(robj.vao);
+    glUseProgram(robj.sp.id);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    int modelLoc = glGetUniformLocation(robj.sp.id, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    glm::mat4 projection;
+    projection =
+        glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+    modelLoc = glGetUniformLocation(robj.sp.id, "projection");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    modelLoc = glGetUniformLocation(robj.sp.id, "view");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE,
+                       glm::value_ptr(ctx.camera.view()));
+
+    glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
+}

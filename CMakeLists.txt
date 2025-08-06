@@ -12,10 +12,10 @@ add_executable(game
     src/main.cpp
     src/glad.c
     src/shader.cpp
-    src/mesh.cpp
     src/camera.cpp
     src/render.cpp
     src/input.cpp
+    src/object.cpp
 )
 
 target_include_directories(game PRIVATE ${GLFW_INCLUDE_DIRS})

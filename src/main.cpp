@@ -13,99 +13,63 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
-// The size of a chunk's side, it's a cube, so the total number of voxel would
-// be equal to CHUNK_LEN * CHUNK_LEN * CHUNK_LEN
-#define CHUNK_LEN 15
-
 void fatal() {
     std::cerr << "Fatal error" << std::endl;
     exit(1);
 }
 
-Context prepare_scene() {
-    Camera cam = Camera(glm::vec3(0.0, 0.0, -10.0), glm::vec3(0.0, 0.0, 1.0),
-                        glm::vec3(0.0, 1.0, 0.0));
-    VoxelChunk chunk(CHUNK_LEN);
-    Context ctx(cam, chunk);
+Context populate_scene(Context &ctx) {
 
-    ScalarField field;
-    
+    ctx.camera = Camera(glm::vec3(0.0, 0.0, -10.0), glm::vec3(0.0, 0.0, 1.0),
+                        glm::vec3(0.0, 1.0, 0.0));
+
+    // Adding objects that will appear in scene
+    ctx.objs.push_back(build_cube());
+    return ctx;
 }
 
-void render(GLFWwindow *window) {
+void game_loop(Context &ctx) {
 
+    // Setup all the rendering
+    render_setup();
+    for (auto it = ctx.objs.begin(); it != ctx.objs.end(); it++) {
+        it->handle = new_render_object();
+        render_register_shaders(it->handle, it->sv, it->sf);
+    }
 
-    program.use();
-
-    GLuint vertices;
-    glGenBuffers(1, &vertices);
-
-    unsigned int colors;
-    glGenBuffers(1, &colors);
-
-    GLuint VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    glBindVertexArray(VAO);
-
-    auto m = Mesh::gen_cube();
-
-    glBindBuffer(GL_ARRAY_BUFFER, vertices);
-    glBufferData(GL_ARRAY_BUFFER, m.vertices.size() * sizeof(float),
-                 m.vertices.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-                          (void *)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, colors);
-    glBufferData(GL_ARRAY_BUFFER, m.colors.size() * sizeof(float),
-                 m.colors.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-                          (void *)0);
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(VAO);
-
-    glm::mat4 model = glm::mat4(1.0f);
-    int modelLoc = glGetUniformLocation(program.id, "model");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-    glm::mat4 projection;
-    projection =
-        glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-
-    modelLoc = glGetUniformLocation(program.id, "projection");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-    glEnable(GL_DEPTH_TEST);
-
-    Context ctx;
-
-    while (!glfwWindowShouldClose(window)) {
-
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        modelLoc = glGetUniformLocation(program.id, "view");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE,
-                           glm::value_ptr(ctx.camera.view()));
-
+    while (!glfwWindowShouldClose(ctx.window)) {
+        // Update state based on input
         process_input(ctx);
 
-        program.use();
-        // Draw stuff here
-        glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
-        glfwSwapBuffers(window);
+        // Update render objects if needed
+        for (auto it = ctx.objs.begin(); it != ctx.objs.end(); it++) {
+            if (it->m.dirty) {
+                render_update_objects(it->handle, *it);
+                it->m.dirty = false;
+            }
+        }
+        // clean up the screen
+        render_clear();
+
+        // Render objects
+        for (auto it = ctx.objs.begin(); it != ctx.objs.end(); it++) {
+            render_object(it->handle, ctx);
+        }
+
+        glfwSwapBuffers(ctx.window);
         glfwPollEvents();
     }
+
+    //     Context ctx;
 }
 
 int main() {
     // Initialise window
     if (!glfwInit())
         return -1;
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     GLFWwindow *window =
         glfwCreateWindow(800, 600, "voxel opengl", nullptr, nullptr);
@@ -115,16 +79,18 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
-    if (!gladLoadGL()) {
-        std::cerr << "Failed to load OpenGL" << std::endl;
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
-    Context ctx = prepare_scene();
+    Context ctx;
+    populate_scene(ctx);
     ctx.window = window;
     setup_input(ctx);
-    start_renderer(ctx);
+
+    game_loop(ctx);
 
     glfwDestroyWindow(window);
     glfwTerminate();

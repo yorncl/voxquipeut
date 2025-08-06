@@ -5,10 +5,7 @@
 #include <iostream>
 #include <sys/stat.h>
 
-Shader::Shader(GLuint type) { this->type = type; }
-
-Shader &Shader::from_file(std::string path) {
-
+std::string get_shader_source(std::string path) {
     FILE *f = fopen(path.c_str(), "r");
     if (!f) {
         std::cerr << "Failed to open shader file: \"" << path << "\""
@@ -32,53 +29,42 @@ Shader &Shader::from_file(std::string path) {
         throw ShaderCreationException();
     }
 
-    this->source = std::string(buff);
+    std::string source = std::string(buff);
     free(buff);
-    this->path = path;
-    return *this;
+    return source;
 }
 
-Shader &Shader::compile() {
-
-    this->id = glCreateShader(this->type);
-    char *source = this->source.data();
-    glShaderSource(this->id, 1, &source, NULL);
-    glCompileShader(this->id);
-
+void shader_compile(Shader& s, GLuint type) {
     int success;
     char infoLog[512];
-    glGetShaderiv(this->id, GL_COMPILE_STATUS, &success);
+    int id = glCreateShader(type);
+    char *ptr = s.source.data();
+
+    glShaderSource(id, 1, &ptr, NULL);
+    glCompileShader(id);
+    glGetShaderiv(id, GL_COMPILE_STATUS, &success);
 
     if (!success) {
-        glGetShaderInfoLog(this->id, 512, NULL, infoLog);
-        std::cerr << "Shader Compilation failed: " << this->path << std::endl;
+        glGetShaderInfoLog(id, 512, NULL, infoLog);
+        std::cerr << "Shader Compilation failed: " << s.path << std::endl;
         std::cerr << infoLog << std::endl;
         throw ShaderCreationException();
     }
-    return *this;
+    s.id = id;
 }
 
-Shader::~Shader() { 
-}
-
-// Shader program utility functions
-
-ShaderProgram::ShaderProgram() { this->id = glCreateProgram(); }
-void ShaderProgram::attach(Shader &s) { this->shaders.push_back(s); }
-void ShaderProgram::use() { glUseProgram(this->id); }
-
-int ShaderProgram::link() {
-    for (auto it = this->shaders.begin(); it != this->shaders.end(); it++) {
-        glAttachShader(this->id, it->id);
+int shader_program_link(ShaderProgram &sp) {
+    for (auto it = sp.shaders.begin(); it != sp.shaders.end(); it++) {
+        glAttachShader(sp.id, it->id);
     }
-    glLinkProgram(this->id);
+    glLinkProgram(sp.id);
 
     int success;
     char infoLog[512];
-    glGetProgramiv(this->id, GL_LINK_STATUS, &success);
+    glGetProgramiv(sp.id, GL_LINK_STATUS, &success);
 
     if (!success) {
-        glGetProgramInfoLog(this->id, 512, NULL, infoLog);
+        glGetProgramInfoLog(sp.id, 512, NULL, infoLog);
         std::cout << "Shader program linking failed" << std::endl
                   << infoLog << std::endl;
         return ERROR;
