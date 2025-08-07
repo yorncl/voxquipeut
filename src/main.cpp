@@ -24,9 +24,26 @@ Context populate_scene(Context &ctx) {
                         glm::vec3(0.0, 1.0, 0.0));
 
     // Adding objects that will appear in scene
-    ctx.objs.push_back(build_cube(glm::vec3(0.0, 0.0, 5.0)));
-    ctx.objs.push_back(build_cube(glm::vec3(0.0, 5.0, 3.0)));
-    ctx.objs.push_back(build_cube(glm::vec3(5.0, 0.0, 4.0)));
+    // ctx.objs.push_back(
+    //     build_cube(glm::vec3(0.0, 0.0, 5.0), glm::vec3(1.0, 1.0, 1.0)));
+
+    int dim = 15;
+
+    std::vector<float> chunk(0, 15 * 15 * 15);
+
+    int n = 10;
+    field_setup(ctx, n);
+    for (int x = 0; x < n; x++) {
+        for (int y = 0; y < n; y++) {
+            for (int z = 0; z < n; z++) {
+                glm::vec3 pos = ctx.f.pos + glm::vec3(x, y, z);
+                float val = field_query(ctx.f, x, y, z);
+                glm::vec3 color = glm::vec3(val, val, val);
+                ctx.objs.push_back(
+                    build_unicolor_cube(pos, glm::vec3(0.1, 0.1, 0.1), color));
+            }
+        }
+    }
     return ctx;
 }
 

@@ -16,6 +16,7 @@ add_executable(game
     src/render.cpp
     src/input.cpp
     src/object.cpp
+    src/field.cpp
 )
 
 target_include_directories(game PRIVATE ${GLFW_INCLUDE_DIRS})

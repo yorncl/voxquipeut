@@ -9,8 +9,8 @@
 
 // Scalar field implem
 
-// Only 10 avaible slots, better get there first!
-static RenderObject objects[10];
+// This is not the line you're looking for
+static RenderObject objects[10000];
 static int stack_top = 0;
 
 int new_render_object() {
@@ -59,9 +59,6 @@ void render_update_objects(int handle, Object &obj) {
     robj.indices = obj.m.indices;
     robj.colors = obj.m.colors;
 
-    std::cout << "updating render object: " << handle << std::endl;
-    std::cout << obj.m.vertices.data() << std::endl;
-    std::cout << robj.vertices.data() << std::endl;
 
     GLuint vertices;
     glGenBuffers(1, &vertices);
@@ -112,6 +109,7 @@ void render_object(Object& obj, Context &ctx) {
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, obj.pos);
+    model = glm::scale(model, obj.scale);
     int modelLoc = glGetUniformLocation(robj.sp.id, "model");
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 

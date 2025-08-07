@@ -44,6 +44,7 @@ struct Mesh {
 struct Object {
     Mesh m;
     glm::vec3 pos;
+    glm::vec3 scale;
     int handle;
     // paths, pretend there is a pretty material abstraction
     std::string sv;
@@ -81,8 +82,9 @@ class Camera {
 struct Field {
     // dimension of a side, len * len * len voxels
     int len;
-    // Center of the cunk, center point of the cube if you will
+    // Top corner of the field
     glm::vec3 pos;
+    // the actual voxel grid
     std::vector<int> data;
 };
 
@@ -90,11 +92,13 @@ struct Field {
 struct Context {
     GLFWwindow *window;
     Camera camera;
+    Field f;
     std::vector<Object> objs;
 };
 
 // object.cpp, code to build different objects
-Object build_cube(glm::vec3);
+Object build_cube(glm::vec3 pos, glm::vec3 scale);
+Object build_unicolor_cube(glm::vec3 pos, glm::vec3 scale, glm::vec3 color);
 
 // shader.cpp
 // code to create and compile shaderprograms
@@ -114,6 +118,12 @@ void render_update_objects(int handle, Object &);
 void render_object(Object& , Context&);
 void render_clear();
 
-// Input API
+// input.cpp
+// Keyboard/mouse that updates the camera's position
 void setup_input(Context &ctx);
 void process_input(Context &ctx);
+
+// field.cpp
+// related to the actual voxel data
+void field_setup(Context &ctx, int n);
+float field_query(Field&, int x, int y, int z);

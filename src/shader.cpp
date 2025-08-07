@@ -29,6 +29,7 @@ std::string get_shader_source(std::string path) {
         throw ShaderCreationException();
     }
 
+    fclose(f);
     std::string source = std::string(buff);
     free(buff);
     return source;

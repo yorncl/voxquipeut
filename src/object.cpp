@@ -1,6 +1,6 @@
 #include "vox.h"
 
-Object build_cube(glm::vec3 pos) {
+Object build_cube(glm::vec3 pos, glm::vec3 scale) {
     float cube_vertices[] = {
         -1.0f, -1.0f, -1.0f,                      // triangle 1 : begin
         -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  // triangle 1 : end
@@ -32,6 +32,7 @@ Object build_cube(glm::vec3 pos) {
 
     Object cube;
     cube.pos = pos;
+    cube.scale = scale;
     cube.m.vertices.assign(
         cube_vertices, cube_vertices + (sizeof(cube_vertices) / sizeof(float)));
     cube.m.colors.assign(cube_colors,
@@ -42,3 +43,40 @@ Object build_cube(glm::vec3 pos) {
 
     return cube;
 }
+
+Object build_unicolor_cube(glm::vec3 pos, glm::vec3 scale, glm::vec3 color) {
+    float cube_vertices[] = {
+        -1.0f, -1.0f, -1.0f,                      // triangle 1 : begin
+        -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  // triangle 1 : end
+        1.0f,  1.0f,  -1.0f,                      // triangle 2 : begin
+        -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, // triangle 2 : end
+        1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
+        1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, 1.0f,  -1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f,
+        -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f,
+        -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  1.0f,
+        1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, -1.0f,
+        1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
+        1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  -1.0f, 1.0f};
+
+    Object cube;
+    cube.pos = pos;
+    cube.scale = scale;
+    cube.m.vertices.assign(
+        cube_vertices, cube_vertices + (sizeof(cube_vertices) / sizeof(float)));
+    cube.m.colors.assign(cube.m.vertices.size(), 0);
+
+    for (int i = 0; i < cube.m.vertices.size(); i += 3) {
+        cube.m.colors[i] = color[0];
+        cube.m.colors[i + 1] = color[1];
+        cube.m.colors[i + 2] = color[2];
+    }
+
+    cube.m.dirty = true;
+    cube.sv = "../src/shaders/vertex.glsl";
+    cube.sf = "../src/shaders/frag.glsl";
+
+    return cube;
+}
+
