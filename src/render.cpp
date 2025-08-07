@@ -124,5 +124,5 @@ void render_object(Object& obj, Context &ctx) {
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE,
                        glm::value_ptr(ctx.camera.view()));
 
-    glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
+    glDrawArrays(GL_TRIANGLES, 0, robj.vertices.size() / 3);
 }

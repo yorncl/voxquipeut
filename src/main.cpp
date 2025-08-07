@@ -20,19 +20,15 @@ void fatal() {
 
 Context populate_scene(Context &ctx) {
 
-    ctx.camera = Camera(glm::vec3(0.0, 0.0, -10.0), glm::vec3(0.0, 0.0, 1.0),
+    ctx.camera = Camera(glm::vec3(0.0, 0.0, -20.0), glm::vec3(0.0, 0.0, 1.0),
                         glm::vec3(0.0, 1.0, 0.0));
 
     // Adding objects that will appear in scene
     // ctx.objs.push_back(
     //     build_cube(glm::vec3(0.0, 0.0, 5.0), glm::vec3(1.0, 1.0, 1.0)));
 
-    int dim = 15;
-
-    std::vector<float> chunk(0, 15 * 15 * 15);
-
-    int n = 10;
-    field_setup(ctx, n);
+    int n = 20;
+    field_setup(ctx, n, glm::vec3(-n / 2, -n / 2, -n / 2));
     for (int x = 0; x < n; x++) {
         for (int y = 0; y < n; y++) {
             for (int z = 0; z < n; z++) {
@@ -44,6 +40,18 @@ Context populate_scene(Context &ctx) {
             }
         }
     }
+    Object m = marching_mesh(ctx.f);
+
+    // for (int i = 0; i < m.m.vertices.size(); i++) {
+    //     std::cout << m.m.vertices[i] << " ";
+    // }
+    // std::cout << std::endl;
+    // for (int i = 0; i < m.m.colors.size(); i++) {
+    //     std::cout << m.m.colors[i] << " ";
+    // }
+    // std::cout << std::endl;
+
+    ctx.objs.push_back(m);
     return ctx;
 }
 

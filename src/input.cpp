@@ -42,7 +42,7 @@ void process_keys(GLFWwindow *window, int key, int scancode, int action,
 }
 
 void process_input(Context &ctx) {
-    float speed = 0.1f;
+    float speed = 0.3f;
     if (input[GLFW_KEY_W])
         ctx.camera.pos += ctx.camera.front * speed;
     if (input[GLFW_KEY_S])

@@ -1,4 +1,5 @@
 #include "vox.h"
+#include <cassert>
 #include <glm/exponential.hpp>
 #include <glm/geometric.hpp>
 #include <glm/glm.hpp>
@@ -18,20 +19,19 @@ static void fill_sphere(Field &f, glm::vec3 pos, float radius) {
     }
 }
 
-void field_setup(Context &ctx, int n) {
+void field_setup(Context &ctx, int n, glm::vec3 pos) {
 
     Field &f = ctx.f;
 
-    // center of the field
-    f.pos =
-        glm::vec3(0.0 - (float)n / 2, 0.0 - (float)n / 2, 0.0 - (float)n / 2);
+    f.pos = pos;
     f.len = n;
-
     f.data.assign(n * n * n, 0);
     fill_sphere(f, glm::vec3(0.0, 0.0, 0.0), (float)n / 3);
 }
 
-float field_query(Field &f, int x, int y, int z) {
+int field_query(Field &f, int x, int y, int z) {
     int side = f.len;
-    return f.data[x * side * side + y * side + z];
+    int index = x * side * side + y * side + z;
+    assert(index < side * side * side);
+    return f.data[index];
 }

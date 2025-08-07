@@ -125,5 +125,9 @@ void process_input(Context &ctx);
 
 // field.cpp
 // related to the actual voxel data
-void field_setup(Context &ctx, int n);
-float field_query(Field&, int x, int y, int z);
+void field_setup(Context &ctx, int n, glm::vec3 pos);
+int field_query(Field&, int x, int y, int z);
+
+// marching_cubes.cpp
+// Takes in the field, and returns an Object containing a mesh buidt from the field
+Object marching_mesh(Field&);
