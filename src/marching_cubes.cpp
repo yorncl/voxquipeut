@@ -289,7 +289,7 @@ int triTable[256][16] = {
 
 Object marching_mesh(Field &f) {
 
-    Object o;
+    Object o = object_new();
     Mesh &m = o.m;
     m.dirty = true;
     o.pos = f.pos;

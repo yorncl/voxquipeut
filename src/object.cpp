@@ -1,5 +1,15 @@
 #include "vox.h"
 
+
+int id_counter = 0;
+
+Object object_new() {
+    Object o;
+    o.id = id_counter;
+    id_counter++;
+    return o;
+}
+
 Object build_cube(glm::vec3 pos, glm::vec3 scale) {
     float cube_vertices[] = {
         -1.0f, -1.0f, -1.0f,                      // triangle 1 : begin
@@ -30,7 +40,7 @@ Object build_cube(glm::vec3 pos, glm::vec3 scale) {
         0.517f, 0.713f, 0.338f, 0.053f, 0.959f, 0.120f, 0.393f, 0.621f, 0.362f,
         0.673f, 0.211f, 0.457f, 0.820f, 0.883f, 0.371f, 0.982f, 0.099f, 0.879f};
 
-    Object cube;
+    Object cube = object_new();
     cube.pos = pos;
     cube.scale = scale;
     cube.m.vertices.assign(
@@ -60,7 +70,7 @@ Object build_unicolor_cube(glm::vec3 pos, glm::vec3 scale, glm::vec3 color) {
         1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
         1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  -1.0f, 1.0f};
 
-    Object cube;
+    Object cube = object_new();
     cube.pos = pos;
     cube.scale = scale;
     cube.m.vertices.assign(

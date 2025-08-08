@@ -8,6 +8,8 @@ pkg_check_modules(GLFW REQUIRED glfw3)
 
 include_directories(include)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 add_executable(game
     src/main.cpp
     src/glad.c

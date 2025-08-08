@@ -13,7 +13,7 @@
 static RenderObject objects[10000];
 static int stack_top = 0;
 
-int new_render_object() {
+int render_new_object() {
     int handle = stack_top;
     stack_top++;
     // RenderObject& o = objects[handle];

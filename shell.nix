@@ -13,6 +13,7 @@ pkgs.mkShell {
     llvmPackages_latest.clang-tools
     bear
     cmake
+    gdb
 
     pkg-config
     glfw

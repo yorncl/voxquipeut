@@ -42,6 +42,7 @@ struct Mesh {
 };
 
 struct Object {
+    int id;
     Mesh m;
     glm::vec3 pos;
     glm::vec3 scale;
@@ -86,7 +87,7 @@ struct Field {
     glm::vec3 pos;
     // the actual voxel grid
     std::vector<int> data;
-    Object* object;
+    int object_id;
 };
 
 // Top level structure
@@ -100,6 +101,7 @@ struct Context {
 // object.cpp, code to build different objects
 Object build_cube(glm::vec3 pos, glm::vec3 scale);
 Object build_unicolor_cube(glm::vec3 pos, glm::vec3 scale, glm::vec3 color);
+Object object_new();
 
 // shader.cpp
 // code to create and compile shaderprograms
@@ -111,7 +113,7 @@ int shader_program_link(ShaderProgram &);
 // code to register shaders
 // get a new render object handle
 void render_setup();
-int new_render_object();
+int render_new_object();
 void render_register_shaders(int handle, std::string path_v, std::string path_f);
 // code to update render target if needed
 void render_update_objects(int handle, Object &);

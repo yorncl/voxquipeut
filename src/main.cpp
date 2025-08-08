@@ -40,9 +40,9 @@ Context populate_scene(Context &ctx) {
     //         }
     //     }
     // }
-    Object m = marching_mesh(ctx.f);
+    Object o = marching_mesh(ctx.f);
     // hmmm not cool
-    ctx.f.object = &m;
+    ctx.f.object_id = o.id;
 
     // for (int i = 0; i < m.m.vertices.size(); i++) {
     //     std::cout << m.m.vertices[i] << " ";
@@ -53,7 +53,7 @@ Context populate_scene(Context &ctx) {
     // }
     // std::cout << std::endl;
 
-    ctx.objs.push_back(m);
+    ctx.objs.push_back(o);
     return ctx;
 }
 
@@ -62,7 +62,7 @@ void game_loop(Context &ctx) {
     // Setup all the rendering
     render_setup();
     for (auto it = ctx.objs.begin(); it != ctx.objs.end(); it++) {
-        it->handle = new_render_object();
+        it->handle = render_new_object();
         render_register_shaders(it->handle, it->sv, it->sf);
     }
 

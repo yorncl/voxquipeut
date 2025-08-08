@@ -10,10 +10,12 @@ void field_fill_sphere(Field &f, glm::vec3 pos, float radius) {
     for (int x = 0; x < side; x++) {
         for (int y = 0; y < side; y++) {
             for (int z = 0; z < side; z++) {
-                glm::vec3 vpos =
-                    glm::vec3(-side / 2 + x, -side / 2 + y, -side / 2 + z);
-                if (glm::length(vpos - pos) <= radius)
-                    f.data[x * side * side + y * side + z] = 1;
+                glm::vec3 vox_pos = glm::vec3(x, y, z);
+                if (glm::length(vox_pos - pos) <= radius) {
+                    int index = x * side * side + y * side + z;
+                    assert(index < side * side * side);
+                    f.data[index] = 1;
+                }
             }
         }
     }
@@ -26,7 +28,7 @@ void field_setup(Context &ctx, int n, glm::vec3 pos) {
     f.pos = pos;
     f.len = n;
     f.data.assign(n * n * n, 0);
-    field_fill_sphere(f, glm::vec3(0.0, 0.0, -25.0), (float)4);
+    field_fill_sphere(f, glm::vec3(n / 2, n / 2, n / 2), (float)7);
 }
 
 int field_query(Field &f, int x, int y, int z) {

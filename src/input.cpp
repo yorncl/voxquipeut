@@ -78,20 +78,38 @@ void process_input(Context &ctx) {
             hit -= ctx.f.pos;
             printf("Raycast hit field coord: %f %f %f\n", hit.x, hit.y, hit.z);
 
-            field_fill_sphere(ctx.f, hit, 10);
+            int nzeros = 0;
+            for (int i = 0; i < ctx.f.data.size(); i++){
+                if (ctx.f.data[i] == 0)
+                    nzeros++;
+            }
+            std::cout << "nzeroes before " << nzeros << std::endl;
+            field_fill_sphere(ctx.f, hit, 3);
+            for (int i = 0; i < ctx.f.data.size(); i++){
+                if (ctx.f.data[i] == 0)
+                    nzeros++;
+            }
+            std::cout << "nzeroes after " << nzeros << std::endl;
 
-            // Object new_terrain = marching_mesh(ctx.f);
-            Object cube = build_cube(hit + ctx.f.pos, glm::vec3(1.0, 1.0, 1.0));
+            Object new_terrain = marching_mesh(ctx.f);
 
             // TODO very naughty to do this in the input code...
-            // ctx.f.object->m = new_terrain.m;
-            // render_update_objects(ctx.f.object->handle, *ctx.f.object);
+            for (auto it = ctx.objs.begin(); it != ctx.objs.end(); it++) {
+                if (it->id == ctx.f.object_id) {
+                    // TODO not clean, the new_terrain will be dropped here, taking its id with him
+                    it->m = new_terrain.m;
+                }
+            }
             // new_terrain.handle = new_render_object();
             // new_terrain.m.dirty = true;
-            // new_terrain.pos -= glm::vec3(-5.0, 0.0, 0.0);
-            cube.handle = new_render_object();
-            render_register_shaders(cube.handle, cube.sv, cube.sf);
-            ctx.objs.push_back(cube);
+            // // new_terrain.pos -= glm::vec3(-10.0, 0.0, 0.0);
+            // render_register_shaders(new_terrain.handle, new_terrain.sv, new_terrain.sf);
+            // ctx.objs.push_back(new_terrain);
+             
+            // Object cube = build_cube(hit + ctx.f.pos, glm::vec3(1.0, 1.0, 1.0));
+            // cube.handle = new_render_object();
+            // render_register_shaders(cube.handle, cube.sv, cube.sf);
+            // ctx.objs.push_back(cube);
         }
         mouse_click = 0;
     }
