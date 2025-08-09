@@ -287,6 +287,15 @@ int triTable[256][16] = {
     {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
+// return the vertices that roughly is on the isosurface
+inline glm::vec3 interpolate_zero(glm::vec3 &p0, glm::vec3 &p1, float v0,
+                                  float v1) {
+
+     // P = P1 + (isovalue - V1) (P2 - P1) / (V2 - V1)
+
+    return p0 + (0.5f - v0) * ((p1 - p0) / (v1 - v0));
+}
+
 Object marching_mesh(Field &f) {
 
     Object o = object_new();
@@ -302,17 +311,29 @@ Object marching_mesh(Field &f) {
     for (int x = 0; x < side - 1; x++) {
         for (int y = 1; y < side; y++) {
             for (int z = 1; z < side; z++) {
+
+                // bottom slice
+                glm::vec3 coord_v0 = glm::vec3(x, y, z);
+                glm::vec3 coord_v1 = glm::vec3(x + 1, y, z);
+                glm::vec3 coord_v2 = glm::vec3(x + 1, y, z - 1);
+                glm::vec3 coord_v3 = glm::vec3(x, y, z - 1);
+                // top slice
+                glm::vec3 coord_v4 = glm::vec3(x, y - 1, z);
+                glm::vec3 coord_v5 = glm::vec3(x + 1, y - 1, z);
+                glm::vec3 coord_v6 = glm::vec3(x + 1, y - 1, z - 1);
+                glm::vec3 coord_v7 = glm::vec3(x, y - 1, z - 1);
+
                 // gather 4 corners voxel data, (could cache some of it?)
                 // bottom slice
-                int v0 = field_query(f, x, y, z);
-                int v1 = field_query(f, x + 1, y, z);
-                int v2 = field_query(f, x + 1, y, z - 1);
-                int v3 = field_query(f, x, y, z - 1);
+                float v0 = field_query(f, coord_v0);
+                float v1 = field_query(f, coord_v1);
+                float v2 = field_query(f, coord_v2);
+                float v3 = field_query(f, coord_v3);
                 // top slice
-                int v4 = field_query(f, x, y - 1, z);
-                int v5 = field_query(f, x + 1, y - 1, z);
-                int v6 = field_query(f, x + 1, y - 1, z - 1);
-                int v7 = field_query(f, x, y - 1, z - 1);
+                float v4 = field_query(f, coord_v4);
+                float v5 = field_query(f, coord_v5);
+                float v6 = field_query(f, coord_v6);
+                float v7 = field_query(f, coord_v7);
 
                 // Computing index from the vertices that are above 0
                 uint8_t index = 0;
@@ -336,13 +357,55 @@ Object marching_mesh(Field &f) {
                 if (index == 0 || index == 0xff)
                     continue;
 
-                // binary representation of edges?
-                int mesh = edgeTable[index];
+                // binary index of edges
+                int ei = edgeTable[index];
                 // pointer to list of edges of our cube that are "active"
                 int *edge = triTable[index];
 
-                // printf("Marched cube: edgeTable[%d], triTable[%d], edge(%p)\n",
-                       // index, mesh, edge);
+                static glm::vec3 new_vertices[12];
+
+                // bottom edges
+                if (ei & 1)
+                    new_vertices[0] =
+                        interpolate_zero(coord_v0, coord_v1, v0, v1);
+                if (ei & 1 << 1)
+                    new_vertices[1] =
+                        interpolate_zero(coord_v1, coord_v2, v1, v2);
+                if (ei & 1 << 2)
+                    new_vertices[2] =
+                        interpolate_zero(coord_v2, coord_v3, v2, v3);
+                if (ei & 1 << 3)
+                    new_vertices[3] =
+                        interpolate_zero(coord_v3, coord_v4, v3, v4);
+                // top edges
+                if (ei & 1 << 4)
+                    new_vertices[4] =
+                        interpolate_zero(coord_v4, coord_v5, v4, v5);
+                if (ei & 1 << 5)
+                    new_vertices[5] =
+                        interpolate_zero(coord_v5, coord_v6, v5, v6);
+                if (ei & 1 << 6)
+                    new_vertices[6] =
+                        interpolate_zero(coord_v6, coord_v7, v6, v7);
+                if (ei & 1 << 7)
+                    new_vertices[7] =
+                        interpolate_zero(coord_v7, coord_v0, v7, v0);
+                // middle edges
+                if (ei & 1 << 8)
+                    new_vertices[8] =
+                        interpolate_zero(coord_v4, coord_v0, v4, v0);
+                if (ei & 1 << 9)
+                    new_vertices[9] =
+                        interpolate_zero(coord_v5, coord_v1, v5, v1);
+                if (ei & 1 << 10)
+                    new_vertices[10] =
+                        interpolate_zero(coord_v6, coord_v2, v6, v2);
+                if (ei & 1 << 11)
+                    new_vertices[11] =
+                        interpolate_zero(coord_v7, coord_v3, v7, v3);
+
+                // printf("Marched cube: edgeTable[%d], triTable[%d],
+                // edge(%p)\n", index, mesh, edge);
 
                 // toggle color to see it better
                 bool dark = false;
@@ -350,33 +413,12 @@ Object marching_mesh(Field &f) {
                     if (edge[i] == -1)
                         break;
 
-                    // Offsets of vertices by edge number
-                    static glm::vec3 vertices_offsets[12] = {
-                        // bottom slice
-                        glm::vec3(0.5, 0.0, 0.0),
-                        glm::vec3(1.0, 0.0, -0.5),
-                        glm::vec3(0.5, 0.0, -1.0),
-                        glm::vec3(0.0, 0.0, -0.5),
-                        // top slice
-                        glm::vec3(0.5, -1.0, 0.0),
-                        glm::vec3(1.0, -1.0, -0.5),
-                        glm::vec3(0.5, -1.0, -1.0),
-                        glm::vec3(0.0, -1.0, -0.5),
-                        // middle edges
-                        glm::vec3(0, -0.5, 0.0),
-                        glm::vec3(1.0, -0.5, 0.0),
-                        glm::vec3(1.0, -0.5, -1.0),
-                        glm::vec3(0.0, -0.5, -1.0),
-                    };
+                    // glm::vec3 marching_cube_pos = glm::vec3(x, y, z);
 
-                    glm::vec3 marching_cube_pos = glm::vec3(x, y, z);
-
-                    glm::vec3 a = marching_cube_pos + vertices_offsets[edge[i]];
-                    glm::vec3 b =
-                        marching_cube_pos + vertices_offsets[edge[i + 1]];
-                    glm::vec3 c =
-                        marching_cube_pos + vertices_offsets[edge[i + 2]];
-                    // printf("%d %d %d\n", edge[i], edge[i+1], edge[i+2]);
+                    glm::vec3 &a = new_vertices[edge[i]];
+                    glm::vec3 &b = new_vertices[edge[i + 1]];
+                    glm::vec3 &c = new_vertices[edge[i + 2]];
+                    // printf("%d %d %d\n", edge[i], edge[i + 1], edge[i + 2]);
                     m.vertices.push_back(a[0]);
                     m.vertices.push_back(a[1]);
                     m.vertices.push_back(a[2]);

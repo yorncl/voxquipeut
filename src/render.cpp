@@ -23,7 +23,11 @@ int render_new_object() {
     return handle;
 }
 
-void render_setup() { glEnable(GL_DEPTH_TEST); }
+void render_setup() {
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
 
 // Very ugly, but it's okay, we're all going to die anyway
 void render_register_shaders(int handle, std::string path_v,
@@ -58,7 +62,6 @@ void render_update_objects(int handle, Object &obj) {
     robj.vertices = obj.m.vertices;
     robj.indices = obj.m.indices;
     robj.colors = obj.m.colors;
-
 
     GLuint vertices;
     glGenBuffers(1, &vertices);
@@ -99,7 +102,7 @@ void render_clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void render_object(Object& obj, Context &ctx) {
+void render_object(Object &obj, Context &ctx) {
 
     int handle = obj.handle;
     RenderObject &robj = objects[handle];
@@ -123,6 +126,8 @@ void render_object(Object& obj, Context &ctx) {
     modelLoc = glGetUniformLocation(robj.sp.id, "view");
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE,
                        glm::value_ptr(ctx.camera.view()));
+    int opacityLoc = glGetUniformLocation(robj.sp.id, "opacity");
+    glUniform1f(opacityLoc, obj.opacity);
 
     glDrawArrays(GL_TRIANGLES, 0, robj.vertices.size() / 3);
 }

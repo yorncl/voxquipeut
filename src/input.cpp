@@ -47,6 +47,8 @@ void mouse_button_callback(GLFWwindow *window, int button, int action,
                            int mods) {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
         mouse_click = true;
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+        mouse_click = false;
 }
 
 static bool firstMouse = true;
@@ -84,7 +86,7 @@ void process_input(Context &ctx) {
                     nzeros++;
             }
             std::cout << "nzeroes before " << nzeros << std::endl;
-            field_fill_sphere(ctx.f, hit, 3);
+            field_fill_sphere(ctx.f, hit, 2);
             for (int i = 0; i < ctx.f.data.size(); i++){
                 if (ctx.f.data[i] == 0)
                     nzeros++;
@@ -111,7 +113,6 @@ void process_input(Context &ctx) {
             // render_register_shaders(cube.handle, cube.sv, cube.sf);
             // ctx.objs.push_back(cube);
         }
-        mouse_click = 0;
     }
 
     glm::vec3 direction;

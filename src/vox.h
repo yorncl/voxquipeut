@@ -50,6 +50,7 @@ struct Object {
     // paths, pretend there is a pretty material abstraction
     std::string sv;
     std::string sf;
+    float opacity;
 };
 
 // rendering info structure
@@ -86,7 +87,7 @@ struct Field {
     // Top corner of the field
     glm::vec3 pos;
     // the actual voxel grid
-    std::vector<int> data;
+    std::vector<float> data;
     int object_id;
 };
 
@@ -132,7 +133,7 @@ void process_input(Context &ctx);
 // field.cpp
 // related to the actual voxel data
 void field_setup(Context &ctx, int n, glm::vec3 pos);
-int field_query(Field&, int x, int y, int z);
+float field_query(Field&, glm::vec3& coord);
 void field_fill_sphere(Field &f, glm::vec3 pos, float radius);
 
 // marching_cubes.cpp

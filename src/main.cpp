@@ -20,39 +20,42 @@ void fatal() {
 
 Context populate_scene(Context &ctx) {
 
-    ctx.camera = Camera(glm::vec3(0.0, 0.0, -20.0), glm::vec3(0.0, 0.0, 1.0),
+    ctx.camera = Camera(glm::vec3(-30.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 1.0),
                         glm::vec3(0.0, 1.0, 0.0));
 
     // Adding objects that will appear in scene
-    // ctx.objs.push_back(
-    //     build_cube(glm::vec3(0.0, 0.0, 5.0), glm::vec3(1.0, 1.0, 1.0)));
 
-    int n = 100;
+    int n = 10;
     field_setup(ctx, n, glm::vec3(-n / 2, -n / 2, -n / 2));
-    // for (int x = 0; x < n; x++) {
-    //     for (int y = 0; y < n; y++) {
-    //         for (int z = 0; z < n; z++) {
-    //             glm::vec3 pos = ctx.f.pos + glm::vec3(x, y, z);
-    //             float val = field_query(ctx.f, x, y, z);
-    //             glm::vec3 color = glm::vec3(val, val, val);
-    //             ctx.objs.push_back(
-    //                 build_unicolor_cube(pos, glm::vec3(0.1, 0.1, 0.1), color));
-    //         }
-    //     }
-    // }
+    field_fill_sphere(ctx.f, glm::vec3(n / 2, n / 2, n / 2), (float)3);
+
+    // uncomment to print cube field to visually debug the voxel's values
+    for (int x = 0; x < n; x++) {
+        for (int y = 0; y < n; y++) {
+            for (int z = 0; z < n; z++) {
+                glm::vec3 field_pos = glm::vec3(x, y, z);
+                // normalized 
+                float val = field_query(ctx.f, field_pos);
+                // inside
+                glm::vec3 color;
+                if (val > 0)
+                    color = glm::vec3(1.0, val, val);
+                else 
+                    color = glm::vec3(0.0, 0.0, 1 + val);
+                glm::vec3 world_pos = ctx.f.pos + field_pos;
+                Object cube = build_unicolor_cube(world_pos, glm::vec3(0.1, 0.1, 0.1), color);
+                // The less close to the iso surface, the more transparent
+                if (val < 0)
+                    cube.opacity = 0.4f + 0.6f * (1 - fabs(val));
+                else 
+                    cube.opacity = 0.4f + 0.6f * val;
+                ctx.objs.push_back(cube);
+            }
+        }
+    }
+
     Object o = marching_mesh(ctx.f);
-    // hmmm not cool
     ctx.f.object_id = o.id;
-
-    // for (int i = 0; i < m.m.vertices.size(); i++) {
-    //     std::cout << m.m.vertices[i] << " ";
-    // }
-    // std::cout << std::endl;
-    // for (int i = 0; i < m.m.colors.size(); i++) {
-    //     std::cout << m.m.colors[i] << " ";
-    // }
-    // std::cout << std::endl;
-
     ctx.objs.push_back(o);
     return ctx;
 }

@@ -19,7 +19,7 @@ bool raycast(Field &f, glm::vec3 pos, glm::vec3 v, glm::vec3& result) {
             continue;
         if (curr.x >= f.len || curr.y >= f.len || curr.z >= f.len)
             break;
-        if (field_query(f, pos.x, pos.y, pos.z) > 0) {
+        if (field_query(f, pos) > 0) {
             result = pos + f.pos;
             return true;
         }

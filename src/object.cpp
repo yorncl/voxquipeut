@@ -5,8 +5,13 @@ int id_counter = 0;
 
 Object object_new() {
     Object o;
+
+    // Getting a new unique id
     o.id = id_counter;
     id_counter++;
+
+    // Default opacity value
+    o.opacity = 1.0f;
     return o;
 }
 
