@@ -38,6 +38,7 @@ struct Mesh {
     std::vector<float> vertices;
     std::vector<float> indices;
     std::vector<float> colors;
+    std::vector<float> normals;
     bool dirty;
 };
 
@@ -59,12 +60,14 @@ struct RenderObject {
     int vao;
     int vbo_v;
     int vbo_c;
+    int vbo_n;
     int ebo;
 
     ShaderProgram sp;
     std::vector<float> vertices;
     std::vector<float> indices;
     std::vector<float> colors;
+    std::vector<float> normals;
 };
 
 // Minimal camera class
@@ -96,6 +99,7 @@ struct Context {
     GLFWwindow *window;
     Camera camera;
     Field f;
+    glm::vec3 light;
     std::vector<Object> objs;
 };
 
@@ -132,9 +136,12 @@ void process_input(Context &ctx);
 
 // field.cpp
 // related to the actual voxel data
-void field_setup(Context &ctx, int n, glm::vec3 pos);
+void field_setup(Field &f, int n, glm::vec3 pos);
 float field_query(Field&, glm::vec3& coord);
+void field_fill_default(Field &f);
 void field_fill_sphere(Field &f, glm::vec3 pos, float radius);
+void field_fill_cuboid(Field &f, glm::vec3 start, int l, int w, int h);
+void field_clear(Field &f);
 
 // marching_cubes.cpp
 // Takes in the field, and returns an Object containing a mesh buidt from the field

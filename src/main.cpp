@@ -25,9 +25,14 @@ Context populate_scene(Context &ctx) {
 
     // Adding objects that will appear in scene
 
+    // Simple white light, only pass in the position
+    ctx.light = glm::vec3(0.0, 40.0, 0.0);
+
     int n = 100;
-    field_setup(ctx, n, glm::vec3(-n / 2, -n / 2, -n / 2));
-    field_fill_sphere(ctx.f, glm::vec3(n / 2, n / 2, n / 2), (float)3);
+    field_setup(ctx.f, n, glm::vec3(-n / 2, -n / 2, -n / 2));
+    field_fill_default(ctx.f);
+    // field_fill_sphere(ctx.f, glm::vec3(n / 2, n / 2, n / 2), (float)3);
+    // field_fill_sphere(ctx.f, glm::vec3(n / 2 + 10, n / 2, n / 2), (float)3);
 
     // uncomment to print cube field to visually debug the voxel's values
     // for (int x = 0; x < n; x++) {

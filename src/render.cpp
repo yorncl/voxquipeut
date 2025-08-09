@@ -58,43 +58,54 @@ void render_register_shaders(int handle, std::string path_v,
 void render_update_objects(int handle, Object &obj) {
     RenderObject &robj = objects[handle];
 
+    // TODO reuse the buffer maybe?
+
     // copy the vbos data
     robj.vertices = obj.m.vertices;
     robj.indices = obj.m.indices;
     robj.colors = obj.m.colors;
+    robj.normals = obj.m.normals;
 
-    GLuint vertices;
+    GLuint vertices, colors, normals;
     glGenBuffers(1, &vertices);
-
-    unsigned int colors;
     glGenBuffers(1, &colors);
+    glGenBuffers(1, &normals);
 
     GLuint VAO;
-
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, vertices);
 
+    // vertex data
+    glBindBuffer(GL_ARRAY_BUFFER, vertices);
     glBufferData(GL_ARRAY_BUFFER, robj.vertices.size() * sizeof(float),
                  robj.vertices.data(), GL_STATIC_DRAW);
-
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
                           (void *)0);
     glEnableVertexAttribArray(0);
 
+    // color data
     glBindBuffer(GL_ARRAY_BUFFER, colors);
     glBufferData(GL_ARRAY_BUFFER, robj.colors.size() * sizeof(float),
                  robj.colors.data(), GL_STATIC_DRAW);
-
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
                           (void *)0);
     glEnableVertexAttribArray(1);
+
+
+    // normals data
+    glBindBuffer(GL_ARRAY_BUFFER, normals);
+    glBufferData(GL_ARRAY_BUFFER, robj.normals.size() * sizeof(float),
+                 robj.normals.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                          (void *)0);
+    glEnableVertexAttribArray(2);
 
     glBindVertexArray(VAO);
 
     robj.vao = VAO;
     robj.vbo_v = vertices;
     robj.vbo_c = colors;
+    robj.vbo_n = normals;
 }
 
 void render_clear() {
@@ -128,6 +139,9 @@ void render_object(Object &obj, Context &ctx) {
                        glm::value_ptr(ctx.camera.view()));
     int opacityLoc = glGetUniformLocation(robj.sp.id, "opacity");
     glUniform1f(opacityLoc, obj.opacity);
+
+    int lightpos = glGetUniformLocation(robj.sp.id, "lightpos");
+    glUniform3f(lightpos, ctx.light.x, ctx.light.y, ctx.light.z);
 
     glDrawArrays(GL_TRIANGLES, 0, robj.vertices.size() / 3);
 }

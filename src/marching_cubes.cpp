@@ -1,5 +1,6 @@
 #include "vox.h"
 #include <cstdio>
+#include <glm/geometric.hpp>
 
 // The edges/triangles tables and triangle list are straight from
 // https://paulbourke.net/geometry/polygonise/
@@ -420,15 +421,30 @@ Object marching_mesh(Field &f) {
                     glm::vec3 &b = new_vertices[edge[i + 1]];
                     glm::vec3 &c = new_vertices[edge[i + 2]];
                     // printf("%d %d %d\n", edge[i], edge[i + 1], edge[i + 2]);
+                    glm::vec3 normal = glm::normalize(glm::cross(b - a, c - a));
+
+                    // push vertices one by one and normals
+                    // I'm sure there is a better way to refactor it, but this will do for now
                     m.vertices.push_back(a[0]);
                     m.vertices.push_back(a[1]);
                     m.vertices.push_back(a[2]);
+                    m.normals.push_back(normal[0]);
+                    m.normals.push_back(normal[1]);
+                    m.normals.push_back(normal[2]);
+
                     m.vertices.push_back(b[0]);
                     m.vertices.push_back(b[1]);
                     m.vertices.push_back(b[2]);
+                    m.normals.push_back(normal[0]);
+                    m.normals.push_back(normal[1]);
+                    m.normals.push_back(normal[2]);
+
                     m.vertices.push_back(c[0]);
                     m.vertices.push_back(c[1]);
                     m.vertices.push_back(c[2]);
+                    m.normals.push_back(normal[0]);
+                    m.normals.push_back(normal[1]);
+                    m.normals.push_back(normal[2]);
 
                     float color = dark ? 0.4 : 0.6;
                     m.colors.insert(m.colors.end(), 9, color);
@@ -446,7 +462,7 @@ Object marching_mesh(Field &f) {
     // for (int i = 0; i < m.colors.size(); i++)
     //     std::cout << m.colors[i] << " ";
     // std::cout << std::endl;
-    printf("Marched mesh: vertices(%lu), colors(%lu)\n", m.vertices.size(),
-           m.colors.size());
+    printf("Marched mesh: vertices(%lu), colors(%lu), normals(%lu)\n", m.vertices.size(),
+           m.colors.size(), m.normals.size());
     return o;
 }

@@ -26,6 +26,8 @@ void process_keys(GLFWwindow *window, int key, int scancode, int action,
             input[GLFW_KEY_SPACE] = true;
         if (key == GLFW_KEY_LEFT_CONTROL)
             input[GLFW_KEY_LEFT_CONTROL] = true;
+        if (key == GLFW_KEY_R)
+            input[GLFW_KEY_R] = true;
     }
     if (action == GLFW_RELEASE) {
         if (key == GLFW_KEY_W)
@@ -72,44 +74,47 @@ void process_input(Context &ctx) {
     if (input[GLFW_KEY_LEFT_CONTROL])
         ctx.camera.pos -= ctx.camera.up * speed;
 
+    if (input[GLFW_KEY_R]) {
+        field_clear(ctx.f);
+        field_fill_default(ctx.f);
+        Object new_terrain = marching_mesh(ctx.f);
+        for (auto it = ctx.objs.begin(); it != ctx.objs.end(); it++) {
+            if (it->id == ctx.f.object_id) {
+                it->m = new_terrain.m;
+            }
+        }
+        input[GLFW_KEY_R] = false;
+    }
+
     if (mouse_click) {
         glm::vec3 hit;
-        if (raycast(ctx.f, ctx.camera.pos, ctx.camera.front, hit))
-        {
+        if (raycast(ctx.f, ctx.camera.pos, ctx.camera.front, hit)) {
             printf("Raycast hit world coord: %f %f %f\n", hit.x, hit.y, hit.z);
             hit -= ctx.f.pos;
             printf("Raycast hit field coord: %f %f %f\n", hit.x, hit.y, hit.z);
 
-            int nzeros = 0;
-            for (int i = 0; i < ctx.f.data.size(); i++){
-                if (ctx.f.data[i] == 0)
-                    nzeros++;
-            }
-            std::cout << "nzeroes before " << nzeros << std::endl;
-            field_fill_sphere(ctx.f, hit, 2);
-            for (int i = 0; i < ctx.f.data.size(); i++){
-                if (ctx.f.data[i] == 0)
-                    nzeros++;
-            }
-            std::cout << "nzeroes after " << nzeros << std::endl;
+            field_fill_sphere(
+                ctx.f, hit + 0.8f * glm::normalize(hit - ctx.camera.pos), 2);
+            // field_fill_sphere(ctx.f, hit, 2);
 
             Object new_terrain = marching_mesh(ctx.f);
 
             // TODO very naughty to do this in the input code...
             for (auto it = ctx.objs.begin(); it != ctx.objs.end(); it++) {
                 if (it->id == ctx.f.object_id) {
-                    // TODO not clean, the new_terrain will be dropped here, taking its id with him
+                    // TODO not clean, the new_terrain will be dropped here,
+                    // taking its id with him
                     it->m = new_terrain.m;
                 }
             }
             // new_terrain.handle = new_render_object();
             // new_terrain.m.dirty = true;
             // // new_terrain.pos -= glm::vec3(-10.0, 0.0, 0.0);
-            // render_register_shaders(new_terrain.handle, new_terrain.sv, new_terrain.sf);
-            // ctx.objs.push_back(new_terrain);
-             
-            // Object cube = build_cube(hit + ctx.f.pos, glm::vec3(1.0, 1.0, 1.0));
-            // cube.handle = render_new_object();
+            // render_register_shaders(new_terrain.handle, new_terrain.sv,
+            // new_terrain.sf); ctx.objs.push_back(new_terrain);
+
+            // Object cube = build_cube(hit + ctx.f.pos,
+            // glm::vec3(1.0, 1.0, 1.0)); cube.handle = render_new_object();
             // render_register_shaders(cube.handle, cube.sv, cube.sf);
             // ctx.objs.push_back(cube);
         }
