@@ -293,7 +293,8 @@ inline glm::vec3 interpolate_zero(glm::vec3 &p0, glm::vec3 &p1, float v0,
 
      // P = P1 + (isovalue - V1) (P2 - P1) / (V2 - V1)
 
-    return p0 + (0.5f - v0) * ((p1 - p0) / (v1 - v0));
+    return p0 + (0.0f - v0) * ((p1 - p0) / (v1 - v0));
+    // return p0 + (p1 - p0) * 0.5f;
 }
 
 Object marching_mesh(Field &f) {
@@ -376,7 +377,7 @@ Object marching_mesh(Field &f) {
                         interpolate_zero(coord_v2, coord_v3, v2, v3);
                 if (ei & 1 << 3)
                     new_vertices[3] =
-                        interpolate_zero(coord_v3, coord_v4, v3, v4);
+                        interpolate_zero(coord_v3, coord_v0, v3, v0);
                 // top edges
                 if (ei & 1 << 4)
                     new_vertices[4] =
@@ -389,7 +390,7 @@ Object marching_mesh(Field &f) {
                         interpolate_zero(coord_v6, coord_v7, v6, v7);
                 if (ei & 1 << 7)
                     new_vertices[7] =
-                        interpolate_zero(coord_v7, coord_v0, v7, v0);
+                        interpolate_zero(coord_v7, coord_v4, v7, v4);
                 // middle edges
                 if (ei & 1 << 8)
                     new_vertices[8] =

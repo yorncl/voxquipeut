@@ -40,14 +40,9 @@ void field_fill_sphere(Field &f, glm::vec3 pos, float radius) {
                     if (dist_iso > -1.0 && grid[index] == -1)
                         grid[index] = dist_iso;
                 }
-                if (grid[index] > -1.0 && grid[index] < 1.0) {
-                    std::cout << grid[index] << "  ";
-                }
-                
             }
         }
     }
-    std::cout << std::endl;
 }
 
 void field_setup(Context &ctx, int n, glm::vec3 pos) {

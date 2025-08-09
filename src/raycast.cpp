@@ -6,10 +6,10 @@
 #define MAX_STEPS 100
 
 // Do not look at the code, it isn't worth your time
-bool raycast(Field &f, glm::vec3 pos, glm::vec3 v, glm::vec3& result) {
+bool raycast(Field &f, glm::vec3 pos, glm::vec3 v, glm::vec3 &result) {
     glm::vec3 dir = glm::normalize(v);
 
-    pos = glm::floor(pos - f.pos);
+    pos = pos - f.pos;
 
     for (int i = 0; i < MAX_STEPS; i++) {
         pos += v;
@@ -19,7 +19,7 @@ bool raycast(Field &f, glm::vec3 pos, glm::vec3 v, glm::vec3& result) {
             continue;
         if (curr.x >= f.len || curr.y >= f.len || curr.z >= f.len)
             break;
-        if (field_query(f, pos) > 0) {
+        if (field_query(f, curr) > 0.0f) {
             result = pos + f.pos;
             return true;
         }

@@ -109,7 +109,7 @@ void process_input(Context &ctx) {
             // ctx.objs.push_back(new_terrain);
              
             // Object cube = build_cube(hit + ctx.f.pos, glm::vec3(1.0, 1.0, 1.0));
-            // cube.handle = new_render_object();
+            // cube.handle = render_new_object();
             // render_register_shaders(cube.handle, cube.sv, cube.sf);
             // ctx.objs.push_back(cube);
         }
