@@ -89,12 +89,12 @@ void process_input(Context &ctx) {
     if (mouse_click) {
         glm::vec3 hit;
         if (raycast(ctx.f, ctx.camera.pos, ctx.camera.front, hit)) {
-            printf("Raycast hit world coord: %f %f %f\n", hit.x, hit.y, hit.z);
+            // printf("Raycast hit world coord: %f %f %f\n", hit.x, hit.y, hit.z);
             hit -= ctx.f.pos;
-            printf("Raycast hit field coord: %f %f %f\n", hit.x, hit.y, hit.z);
+            // printf("Raycast hit field coord: %f %f %f\n", hit.x, hit.y, hit.z);
 
             field_fill_sphere(
-                ctx.f, hit + 0.8f * glm::normalize(hit - ctx.camera.pos), 2);
+                ctx.f, hit + 1.2f * glm::normalize(hit - ctx.camera.pos), 2);
             // field_fill_sphere(ctx.f, hit, 2);
 
             Object new_terrain = marching_mesh(ctx.f);
